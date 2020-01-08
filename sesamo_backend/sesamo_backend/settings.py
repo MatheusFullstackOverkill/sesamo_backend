@@ -25,7 +25,7 @@ SECRET_KEY = 'v2f04ft0dpjukv)c3=+xa73jlyucjhsb_hu0jb)9oc5ju@-no*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-AUTH_USER_MODEL = 'database.User'
+AUTH_USER_MODEL = 'api.User'
 
 STATIC_URL = '/static/'
 
@@ -38,9 +38,10 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
-    'database.apps.DatabaseConfig',
-    'app.apps.AppConfig',
-    'dashboard.apps.DashboardConfig',
+    'api.apps.ApiConfig',
+    # 'database.apps.DatabaseConfig',
+    # 'app.apps.AppConfig',
+    # 'dashboard.apps.DashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
