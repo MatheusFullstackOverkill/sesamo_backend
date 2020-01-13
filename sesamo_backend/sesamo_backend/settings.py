@@ -38,6 +38,7 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
     'api.apps.ApiConfig',
     # 'database.apps.DatabaseConfig',
     # 'app.apps.AppConfig',
@@ -142,6 +143,7 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
+        # 'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',

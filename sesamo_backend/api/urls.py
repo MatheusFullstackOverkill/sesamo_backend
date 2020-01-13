@@ -1,18 +1,22 @@
 from django.urls import path
 from django.conf.urls import url, include
-from rest_framework import routers
-from .views import UserViewSet, FAQViewSet, LocationsViewSet
-from rest_framework.authtoken import views
+# from rest_framework import routers
+from rest_framework_nested import routers
+from .views import UserViewSet, FAQViewSet, LocationsViewSet, QuestionsViewSet
 
 # Routers provide an easy way of automatically determining the URL conf.
-router = routers.DefaultRouter()
-router.register('', UserViewSet, basename='users')
-router.register('', FAQViewSet, basename='faq')
-router.register('', LocationsViewSet, basename='locations')
+router = routers.SimpleRouter()
+router.register('users', UserViewSet)
+router.register('faq', FAQViewSet)
+faq_router = routers.NestedSimpleRouter(router, 'faq', lookup='category')
+faq_router.register('questions', QuestionsViewSet, basename='category-question')
+router.register('questions', QuestionsViewSet)
+router.register('locations', LocationsViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', include(router.urls)),
+    path('', include(faq_router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

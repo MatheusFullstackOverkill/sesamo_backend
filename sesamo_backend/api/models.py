@@ -28,24 +28,6 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-class FAQCategory(models.Model):
-
-    name = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.name
-
-class FAQ(models.Model):
-
-    question = models.TextField()
-    answer = models.TextField()
-    category = models.ForeignKey(FAQCategory, on_delete=models.CASCADE)
-
-    REQUIRED_FIELDS = ['question', 'category']
-
-    def __str__(self):
-        return self.question
-
 class User(AbstractBaseUser, PermissionsMixin):
 
     def upload_path(self, filename):
@@ -138,23 +120,23 @@ class Location(models.Model):
 
     REQUIRED_FIELDS = ['latitude', 'longitude', 'latitudeDelta', 'longitudeDelta']
 
-# class FAQCategory(models.Model):
+class FAQCategory(models.Model):
 
-#     name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
 
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
 
-# class FAQ(models.Model):
+class FAQ(models.Model):
 
-#     question = models.TextField()
-#     answer = models.TextField()
-#     categoy = models.ForeignKey(FAQCategory, on_delete=models.CASCADE)
+    question = models.TextField()
+    answer = models.TextField()
+    category = models.ForeignKey(FAQCategory, on_delete=models.CASCADE)
 
-#     REQUIRED_FIELDS = ['question', 'category']
+    REQUIRED_FIELDS = ['question', 'category']
 
-#     def __str__(self):
-#         return self.question
+    def __str__(self):
+        return self.question
 
 class Teste(models.Model):
     stringArr = ArrayField(models.ImageField(upload_to='upload_path', blank=True),size=8)
