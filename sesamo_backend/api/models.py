@@ -139,7 +139,7 @@ class FAQ(models.Model):
 
     question = models.TextField()
     aunswer = models.TextField()
-    category = models.ForeignKey(FAQCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(FAQCategory, on_delete=models.CASCADE, null=True, blank=True)
 
     REQUIRED_FIELDS = ['question', 'category']
 
