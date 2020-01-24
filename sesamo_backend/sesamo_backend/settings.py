@@ -36,13 +36,12 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'api.apps.ApiConfig',
-    # 'database.apps.DatabaseConfig',
-    # 'app.apps.AppConfig',
-    # 'dashboard.apps.DashboardConfig',
+    'djoser',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,6 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+ASGI_APPLICATION = "sesamo_backend.routing.application"
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -67,7 +68,7 @@ ROOT_URLCONF = 'sesamo_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -149,6 +150,35 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
     ]
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    #     'rest_framework.authentication.SessionAuthentication',
+    #     'rest_framework.authentication.BasicAuthentication',
+    # ),
+}
+
+JWT_AUTH = {
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+        'sesamo_backend.utils.jwt_response_payload_handler',
+    'JWT_VERIFY_EXPIRATION': False
+}
+
+EMAIL_USE_TLS=True
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_HOST_USER='matheusdbaf0123@gmail.com'
+EMAIL_HOST_PASSWORD='doctorwho3210'
+EMAIL_PORT=587
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': 'api/reset_password?uid={uid}&token={token}',
+    # 'USERNAME_RESET_CONFIRM_URL': 'auth/username/reset/confirm/{uid}/{token}',
+    # 'ACTIVATION_URL': 'auth/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SERIALIZERS': {},
 }
 
 # APPEND_SLASH = False

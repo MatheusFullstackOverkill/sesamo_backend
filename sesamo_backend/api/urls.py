@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf.urls import url, include
 # from rest_framework import routers
 from rest_framework_nested import routers
-from .views import UserViewSet, FAQViewSet, LocationsViewSet, QuestionsViewSet
+from .views import UserViewSet, FAQViewSet, LocationsViewSet, QuestionsViewSet, reset_password
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.SimpleRouter()
@@ -18,5 +18,6 @@ router.register('locations', LocationsViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(faq_router.urls)),
+    path('reset_password', reset_password, name='reset_password'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

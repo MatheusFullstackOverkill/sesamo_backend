@@ -9,6 +9,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator
 from django.conf import settings
+import datetime
+import time
 
 class UserManager(BaseUserManager):
     def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
@@ -31,8 +33,8 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 
     def upload_path(self, filename):
-        print(filename)
-        return "profile_pics/"+str(self.pk)+'/'+filename
+        millis = str(round(time.time() * 1000))
+        return "profile_pics/"+str(self.pk)+'/'+millis+filename
 
     def upload_document_path(self, filename):
         print(filename)
@@ -40,14 +42,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         return "documents/"+str(self.pk)+'/'+filename
 
     # username = models.CharField(_('username'), max_length=15, unique=True, help_text=_('Required. 15 characters or fewer. Letters, numbers and @/./+/-/_ characters'), validators=[ validators.RegexValidator(re.compile('^[\w.@+-]+$'), _('Enter a valid username.'), _('invalid'))])
-    first_name = models.CharField(_('first name'), max_length=30)
-    last_name = models.CharField(_('last name'), max_length=30)
+    # first_name = models.CharField(_('first name'), max_length=30)
+    # last_name = models.CharField(_('last name'), max_length=30)
+    full_name = models.CharField(_('full name'), max_length=300)
     email = models.EmailField(_('email address'), max_length=255, unique=True)
     profile_pic = models.ImageField(upload_to=upload_path, blank=True)
     CPF = models.CharField(_('CPF'),max_length=16, unique=True)
+    cellphone = models.CharField(_('cellphone'),max_length=30, null=True, blank=True)
     birthdate = models.DateTimeField(_('birthdate'),null=True, blank=True)
     usertype = models.IntegerField(_('usertype'), validators=[MaxValueValidator(5)], null=True, blank=True)
-    sign_in_status = models.IntegerField(_('sign in status'), validators=[MaxValueValidator(5)], null=True, blank=True)
+    sign_in_status = models.IntegerField(_('sign in status'), validators=[MaxValueValidator(7)], null=True, blank=True)
     sign_in_date = models.DateTimeField(null=True, blank= True)
     sign_review_date = models.DateTimeField(null=True, blank= True)
     sign_validation_date = models.DateTimeField(null=True, blank= True)
@@ -63,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_trusty = models.BooleanField(_('trusty'), default=False, help_text=_('Designates whether this user has confirmed his account.'))
     
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'CPF']
+    REQUIRED_FIELDS = ['full_name', 'CPF']
 
     objects = UserManager()
 
@@ -71,10 +75,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = _('user')
         verbose_name_plural = _('users')
     def get_full_name(self):
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip()
+        # full_name = '%s %s' % (self.first_name, self.last_name)
+        full_name = self.full_name
+        # return full_name.strip()
+        return full_name
     def get_short_name(self):
-        return self.first_name
+        short_name = self.full_name.split(' ')[0]
+        return short_name
     def email_user(self, subject, message, from_email=None):
         send_mail(subject, message, from_email, [self.email])
 
@@ -110,6 +117,7 @@ class SituationalDocumentPic(models.Model):
 class Location(models.Model):
 
     name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
     latitudeDelta = models.FloatField()
@@ -130,7 +138,7 @@ class FAQCategory(models.Model):
 class FAQ(models.Model):
 
     question = models.TextField()
-    answer = models.TextField()
+    aunswer = models.TextField()
     category = models.ForeignKey(FAQCategory, on_delete=models.CASCADE)
 
     REQUIRED_FIELDS = ['question', 'category']

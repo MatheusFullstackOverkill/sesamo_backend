@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from .models import User, OfficialDocumentPic, SituationalDocumentPic, FAQCategory, FAQ, Location
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
-from .serializers import UserSerializer, DocumentSerializer, FAQCategorySerializer, FAQSerializer, LocationSerializer
+from .serializers import UserSerializer, DocumentSerializer, FAQCategorySerializer, FAQSerializer, LocationSerializer, UserCodeSerializer
 from django.utils.crypto import get_random_string
 from django.core.files.base import ContentFile
 from datetime import datetime, timezone
@@ -17,6 +18,13 @@ import base64
 import copy
 import json
 import os
+# from .password_token_validation import ForgotPasswordTokenAuthentication
+from cryptography.fernet import Fernet
+# from .fernet_key import f, key
+
+# from rest_framework.permissions 
+from rest_framework.authentication import TokenAuthentication
+from .pyrebase_config import *
 
 # Middleware to check token
 # class CheckValidParamMixin(object):
@@ -85,22 +93,18 @@ class UserViewSet(viewsets.ModelViewSet):
                 pic = user_data['profile_pic']
                 format, imgstr = pic.split(";base64,")
                 ext = format.split("/")[-1]
-                # print(ext)
                 image = ContentFile(base64.b64decode(imgstr), name="profile_pic." + ext)
-                # print(image.name)
-                # print(os.path.join(os.path.abspath(os.path.dirname(__name__)) ))
                 projetPath = str(os.path.join(os.path.abspath(os.path.dirname(__name__)) ))
-                # print(projetPath)
                 path = str(userFromGet.profile_pic.url)
-                # print(''.join((projetPath, path)).replace("\\", "/"))
                 os.unlink(''.join((projetPath, path)).replace("\\", "/"))
                 userFromGet.profile_pic.delete(save=True)
                 userFromGet.profile_pic = image
                 userFromGet.save()
-                # request.POST._mutable = True
-                # request.POST.pop('profile_pic')
                 user_data.pop('profile_pic')
-            # user_data = request.POST.dict()
+            if 'password' in user_data:
+                userFromGet.set_password(user_data['password'])
+                userFromGet.save()
+                user_data.pop('password')
             userFromFilter = User.objects.filter(pk=pk)
             userFromFilter.update(**user_data)
             serializer = UserSerializer(userFromGet, context={"request":request}, partial=True)
@@ -109,33 +113,55 @@ class UserViewSet(viewsets.ModelViewSet):
             traceback.print_exc()
             return Response(status=500)
 
-    @action(detail=False, methods=['get'], permission_classes=(AllowAny,))
+    @action(detail=False, methods=['post'], permission_classes=(AllowAny,))
     def check_if_user_exists(self, request, pk=None):
+        data = json.loads(request.body)
         try:
-            checkUser = User.objects.get(email=request.GET.get('email'))
-            return Response('Email already in use', status=403)
+            checkUser = User.objects.get(email = data['email'])
+            response = {
+                'error': 'Email já cadastrado.'
+            }
+            return Response(response, status=403)
         except:
             try:
-                checkUser = User.objects.get(CPF=request.GET.get('CPF'))
-                return Response('CPF already in use', status=403)
+                checkUser = User.objects.get(CPF = data['CPF'])
+                response = {
+                    'error': 'CPF já cadastrado.'
+                }
+                return Response(response, status=403)
             except:
                 return Response(True)
+
+    @action(detail=False, methods=['get'], permission_classes=(AllowAny,))
+    def get_user_codes(self, request):
+        users = User.objects.all().values('user_code')
+        print(users)
+        serializer = UserCodeSerializer(users, partial=True, many=True)
+        user_codes = serializer.data
+        print(self.queryset.values_list('user_code', flat=True))
+        # for i in user_codes.values():
+        #     print(i)
+        return Response(self.queryset.values_list('user_code', flat=True))
 
     @action(detail=False, methods=['post'], permission_classes=(AllowAny,))
     def sign_in(self, request):
         signInData = json.loads(request.body)
         try:
             newUser = User.objects.create_user(
-                first_name=signInData['first_name'],
-                last_name=signInData['last_name'],
+                full_name=signInData['full_name'],
+                # last_name=signInData['last_name'],
                 email=signInData['email'], 
                 password=signInData['password'], 
                 usertype=signInData['usertype'],
                 CPF=signInData['CPF'],
+                cellphone=signInData['cellphone'],
                 birthdate=datetime.strptime(signInData['birthdate'], "%d/%m/%Y").date(),
                 sign_in_status=signInData['sign_in_status'],
                 user_code=signInData['user_code'])
-            return Response(True)
+            userId = {
+                'userId' : newUser.id
+            }
+            return Response(userId)
         except:
             traceback.print_exc()
             return Response(status=500)
@@ -165,18 +191,19 @@ class UserViewSet(viewsets.ModelViewSet):
     def add_user_official_document(self, request, pk):
         signInData = json.loads(request.body)
         try:
-            for pic in signInData['picSet']:
-                # print(signInData['document_type'])
-                format, imgstr = pic['document'].split(";base64,")
-                ext = format.split("/")[-1]
-                print(ext)
-                image = ContentFile(base64.b64decode(imgstr), name=pic['document_type']+"." + ext)
-                print(image.name)
-                document = OfficialDocumentPic(
-                    user_id=User.objects.get(pk=pk),
-                    document_type=pic['document_type'],
-                    document_pic=image)
-                document.save()
+            pic = signInData['pic']
+            # for pic in signInData['picSet']:
+            # print(signInData['document_type'])
+            format, imgstr = pic['document'].split(";base64,")
+            ext = format.split("/")[-1]
+            print(ext)
+            image = ContentFile(base64.b64decode(imgstr), name=pic['document_type']+"." + ext)
+            print(image.name)
+            document = OfficialDocumentPic(
+                user_id=User.objects.get(pk=pk),
+                document_type=pic['document_type'],
+                document_pic=image)
+            document.save()
             # print(OfficialDocumentPic.objects.filter(user_id=data['userId']))
             user = User.objects.get(pk=pk)
             user.sign_in_status = 3
@@ -222,6 +249,17 @@ class UserViewSet(viewsets.ModelViewSet):
     #     traceback.print_exc()
     #     return Response('User already exists', status=500)
 
+    @action(detail=True, methods=['get'])
+    def activate_user(self, request, pk):
+        try:
+            data = User.objects.get(pk=pk)
+            data.sign_in_status = 7
+            data.save()
+            return Response('User activated!')
+        except:
+            traceback.print_exc()
+            return Response('User not found', status=404)
+
     @action(detail=False, methods=['get'])
     def logout(self, request, *args, **kwargs):
         try:
@@ -241,7 +279,7 @@ class FAQViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = FAQCategory.objects.all()
         for category in queryset:
-            questions = FAQ.objects.filter(category=category).exclude(answer='')
+            questions = FAQ.objects.filter(category=category).exclude(aunswer='')
             category.questions = questions
         return queryset
         
@@ -298,3 +336,56 @@ class LocationsViewSet(viewsets.ModelViewSet):
         except:
             traceback.print_exc()
             return Response('error', status=500)
+
+def reset_password(request):
+    return render(request, 'reset_password.html')
+
+# class ScanQRCode(APIView):
+#     def get(self, request, format=None):
+#         db = firebase.database()
+#         userCodes = db.child(''.join(('/userCodes/','171662225'))).get()
+#         print(userCodes.val())
+#         if userCodes.val() != None:
+#             print('opa')
+#         return Response(True) 
+
+#     def post(self, request, format=None):
+#         data = json.loads(request.body)
+#         db = firebase.database()
+#         userCode = db.child(''.join(('/userCodes/',data['user_code']))).get().val()
+#         print(userCode)
+#         if userCode != None:
+#             db.child("bathrooms").child(data['bathroom_id']).update({"userRequested": True})
+#             def listen_to_data_change(message):
+#                 print(message["event"]) # put
+#                 print(message["path"]) # /-K7yGTTEp7O549EzTYtI
+#                 print(message["data"]) # {'title': 'Pyrebase', "body": "etc..."}
+#                 return Response(True)
+
+#             my_stream = db.child(''.join(('/userCodes/',data['user_code']))).stream(listen_to_data_change)
+#         return Response(True) 
+
+# class ForgotPasswordViewSet(viewsets.ViewSet):
+
+#     # permission_classes=(AllowAny,)
+#     authentication_classes=(ForgotPasswordTokenAuthentication,)
+
+#     @action(detail=False, methods=['post'], permission_classes=(AllowAny,))
+#     def create_new_password_token(self, request):
+#         data = json.loads(request.body)
+#         email = data['email']
+#         user = User.objects.get(email=email)
+#         byte_str = bytes(email, encoding="utf-8")
+#         token = f.encrypt(byte_str).decode(encoding="utf-8")
+#         # email_decrypted = f.decrypt(bytes(token, encoding="utf-8")).decode(encoding="utf-8")
+#         # user = User.objects.get(email=email_decrypted)
+#         # user.forgot_password_token = token
+#         # user.forgot_password_token_created_at = datetime.now(timezone.utc)
+#         # user.save()
+#         return Response({'forgot_password_token':token})
+
+#     @action(detail=False, methods=['get'])
+#     def verify_token(self, request):
+#         print(request.user.first_name)
+#         return Response({'message': 'Valid token!'})
+

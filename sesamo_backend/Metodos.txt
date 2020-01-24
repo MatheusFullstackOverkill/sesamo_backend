@@ -21,6 +21,7 @@ fetch('http://localhost:8000/api/users/sign_in/', {
         email:'mano@gmail.com', 
         password:'1234567', 
         usertype:2,
+        cellphone: '91111-8888',
         CPF:'123.456.678-90',
         birthdate:'12/12/1999',
         sign_in_status:1,
@@ -117,3 +118,56 @@ fetch('http://localhost:8000/api/locations/add_location/', {
     })
 });
 
+fetch('http://localhost:8000/api/forgot-password/create_new_password_token/', {
+    method: 'POST',
+    headers: {
+        'Content-type':'application/json'
+    },
+    body: JSON.stringify({
+        email: 'matheus@gmail.com'
+    })
+})
+
+fetch('http://localhost:8000/auth/users/reset_password_confirm/', {
+    method: 'POST',
+    headers: {
+        'Content-type':'application/json'
+    },
+    body: JSON.stringify({
+        uid: 'MQ',
+        token: '5d4-f5f712604652abbf0e28',
+        new_password: '123456mt'
+    })
+})
+
+fetch('http://localhost:8000/api/users/', {
+    method: 'GET',
+    headers: {
+        'Authorization': 'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6Im1hdGhldXNkYmFmMDEyM0BnbWFpbC5jb20iLCJleHAiOjE1Nzk0NDc4OTQsImVtYWlsIjoibWF0aGV1c2RiYWYwMTIzQGdtYWlsLmNvbSJ9.P_dML8yVV9bg6Yfxn4bSYAGqVirB5vo9R4mzoainFZo',
+        'Content-type':'application/json'
+    }
+});
+
+fetch('http://localhost:8000/api/users/1/activate_user', {
+    method: 'GET',
+    headers: {
+        'Content-type':'application/json'
+    }
+});
+
+var chatSocket = new WebSocket('ws://127.0.0.1:8080/ws/scan/user_token/');
+
+chatSocket.send(JSON.stringify({
+    'user_code': '146223755', 
+    'bathroom_id': '1'
+}));
+
+chatSocket.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    var message = data['message'];
+    console.log(message);
+};
+
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+};
