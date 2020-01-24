@@ -296,14 +296,12 @@ class FAQViewSet(viewsets.ModelViewSet):
         # print(serializer.data)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def post_question(self, request, pk):
+    @action(detail=False, methods=['post'])
+    def post_question(self, request):
         data = json.loads(request.body)
         try:
-            category=FAQCategory.objects.get(pk=pk)
             newQuestion = FAQ(
-                question=data['question'],
-                category=category
+                question=data['question']
             )
             newQuestion.save()
             return Response(True)
