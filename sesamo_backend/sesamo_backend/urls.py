@@ -20,11 +20,18 @@ from django.conf.urls.static import static
 from rest_framework.authtoken.views import obtain_auth_token  # <-- Here
 from rest_framework_jwt.views import obtain_jwt_token
 from .utils import CustomAuthToken
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
     path('auth/', include('djoser.urls')),
-    path('api-auth/', include('rest_framework.urls')),
-    path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth')
+    # path('api-auth/', include('rest_framework.urls')),
+    path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
+    # websockets
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

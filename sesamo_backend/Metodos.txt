@@ -171,3 +171,86 @@ chatSocket.onmessage = function(e) {
 chatSocket.onclose = function(e) {
     console.error('Chat socket closed unexpectedly');
 };
+
+Normal User:
+    var chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/panic-button/user_token/?token=e41c71ef110353c66ac53533ff063749f194f37e')
+    chatSocket.send(JSON.stringify({
+        message_type: 'request',
+        user_data: {
+            user_id: 1,
+            user_channel: 'specific.EIjDKCgD!hvmzCmhnNkYN',
+            latitude: -23.622549,
+            longitude: -46.692955,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421
+        }
+    }));
+
+    chatSocket.send(JSON.stringify({
+        message_type: 'location_update',
+        send_to_channel_name: 'specific.EIjDKCgD!hvmzCmhnNkYN',
+        user_data: {
+            user_id: 1,
+            user_channel: '32423423432',
+            latitude: -2.,622549,
+            longitude: -46.692955,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421
+        }
+    }));
+
+Employeees:
+    var chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/panic-button/user_token/?token=4c75a2d0bad885887237728af3e6a72fb75b36f3')
+    var chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/panic-button/user_token/?token=fba32ed0af626368af57cfbbd8b9c906d2a7ff06')
+    var chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/panic-button/user_token/?token=abc3c44c1d517f4f0b3bc4f58a94e23e34be5d07')
+
+    chatSocket.send(JSON.stringify({
+        message_type: 'confirm',
+        user_channel_name: 'specific.EIjDKCgD!hvmzCmhnNkYN',
+        user_id: 1,
+        employee_data: {
+            user_id: 1,
+            user_channel: '32423423432',
+            latitude: -23.622549,
+            longitude: -46.692955,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421
+        }
+    }));
+
+    chatSocket.send(JSON.stringify({
+        message_type: 'location_update',
+        send_to_channel_name: 'specific.EIjDKCgD!hvmzCmhnNkYN',
+        user_data: {
+            user_id: 1,
+            user_channel: '32423423432',
+            latitude: -23,622549,
+            longitude: -46,692955,
+            latitudeDelta: 0,0922,
+            longitudeDelta: 0,0421
+        }
+    }));
+
+    chatSocket.send(JSON.stringify({
+        message_type: 'finish_proccess',
+        send_to_channel_name: 'specific.EIjDKCgD!hvmzCmhnNkYN',
+        user_id: 1,
+        employee_data: {
+            user_id: 1,
+            user_channel: '32423423432',
+            latitude: -23.622549,
+            longitude: -46.692955,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421
+        }
+    }));
+
+chatSocket.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    var message = data['message'];
+    console.log(message);
+};
+
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+};

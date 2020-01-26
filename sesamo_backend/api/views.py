@@ -18,11 +18,7 @@ import base64
 import copy
 import json
 import os
-# from .password_token_validation import ForgotPasswordTokenAuthentication
 from cryptography.fernet import Fernet
-# from .fernet_key import f, key
-
-# from rest_framework.permissions 
 from rest_framework.authentication import TokenAuthentication
 from .pyrebase_config import *
 

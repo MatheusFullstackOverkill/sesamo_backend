@@ -30,6 +30,37 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+class Client(models.Model):
+    name = models.CharField(max_length=300)
+    # CNPJ = models.CharField(max_length=16, unique=True)
+    def __str__(self):
+        return self.name
+
+# class Workplace(models.Model):
+#     owner = models.ForeignKey(Client, on_delete=models.CASCADE)
+#     latitude = models.FloatField(null=True, blank=True)
+#     longitude = models.FloatField(null=True, blank=True)
+#     latitudeDelta = models.FloatField(null=True, blank=True)
+#     longitudeDelta = models.FloatField(null=True, blank=True)
+
+    # def __str__(self):
+    #     return self.user_id
+
+class Location(models.Model):
+
+    owner = models.ForeignKey(Client, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    latitudeDelta = models.FloatField()
+    longitudeDelta = models.FloatField()
+
+    def __str__(self):
+        return self.name
+
+    # REQUIRED_FIELDS = ['latitude', 'longitude', 'latitudeDelta', 'longitudeDelta']
+
 class User(AbstractBaseUser, PermissionsMixin):
 
     def upload_path(self, filename):
@@ -56,7 +87,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     sign_review_date = models.DateTimeField(null=True, blank= True)
     sign_validation_date = models.DateTimeField(null=True, blank= True)
     user_code = models.IntegerField(_('user code'),  validators=[MaxValueValidator(999999999)], null=True, blank=True)
-    # faq = models.ForeignKey(FAQ, on_delete=models.CASCADE, null=True, blank=True)
+    channel_name = models.CharField(_('channel name'), max_length=300, null=True, blank=True)
+    workplace = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
+    user_who_requested = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    busy = models.BooleanField(default=False)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    latitudeDelta = models.FloatField(null=True, blank=True)
+    longitudeDelta = models.FloatField(null=True, blank=True)
     access_token = models.TextField(_('access token'), null=True, blank=True)
     access_token_created_at = models.DateTimeField(_('access token created at'),null=True, blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False, help_text=_('Designates whether the user can log into this admin site.'))
@@ -113,20 +151,6 @@ class SituationalDocumentPic(models.Model):
 
     def __str__(self):
         return str(User.objects.get(email=self.user_id))
-
-class Location(models.Model):
-
-    name = models.CharField(max_length=200)
-    description = models.TextField(null=True, blank=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    latitudeDelta = models.FloatField()
-    longitudeDelta = models.FloatField()
-
-    def __str__(self):
-        return self.name
-
-    REQUIRED_FIELDS = ['latitude', 'longitude', 'latitudeDelta', 'longitudeDelta']
 
 class FAQCategory(models.Model):
 

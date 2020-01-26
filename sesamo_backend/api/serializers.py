@@ -21,7 +21,10 @@ class UserSerializer(serializers.ModelSerializer):
             'user_code',
             'access_token',
             'is_staff',
-            'profile_pic']
+            'profile_pic',
+            'channel_name',
+            'user_who_requested',
+            'busy']
 
 class UserCodeSerializer(serializers.ModelSerializer):
     class Meta:
